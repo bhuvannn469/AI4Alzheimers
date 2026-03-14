@@ -1,129 +1,247 @@
-# 🧠 AI4Alzheimers - MRI Classification System
+# AI4Alzheimers
 
-Deep learning-based classification system for detecting Alzheimer's disease stages from MRI scans using ResNet50.
+An AI-powered MRI classification system for detecting different stages of Alzheimer's disease using deep learning.
 
-## 🚀 Quick Start Guide
+## 📊 Model Performance
 
-### ⚡ Fastest Way to Run (Windows)
+- **Accuracy**: 92.89%
+- **F1-Score**: 92.83%
+- **Architecture**: ResNet-18 (Fine-tuned)
+- **Dataset**: 11,519 brain MRI images (10,240 train, 1,279 test)
 
-Simply double-click these files in order:
+## Overview
 
-1. **`start-backend.bat`** → Starts FastAPI server (port 8000)
-2. **`start-frontend.bat`** → Starts React app (port 5173)
+This project uses a pre-trained ResNet-18 model, fine-tuned on brain MRI scans, to classify images into four stages of Alzheimer's disease:
 
-### macOS/Linux Users
+| Class                    | Description                         | Test Accuracy |
+| ------------------------ | ----------------------------------- | ------------- |
+| **No Impairment**        | Healthy brain, no cognitive decline | 97.50%        |
+| **Very Mild Impairment** | Minimal cognitive changes           | 86.83%        |
+| **Mild Impairment**      | Early stage cognitive decline       | 91.06%        |
+| **Moderate Impairment**  | Significant cognitive impairment    | 100.00%       |
 
-**Terminal 1 - Backend:**
+## Features
+
+✅ **Production-ready Jupyter notebook** with evaluation metrics  
+✅ **Interactive web interface** using Streamlit  
+✅ **Relative paths** for reproducibility across environments  
+✅ **Confusion matrix visualization** saved to outputs/  
+✅ **Training safety guard** prevents accidental model retraining  
+✅ **Comprehensive documentation** with docstrings and comments
+
+## Project Structure
+
+```
+AI4Alzheimers/
+├── app/                          # Streamlit web application
+│   ├── app.py                   # Main application with UI and inference
+│   └── alz_resnet18.pt          # Trained model weights (42.72 MB)
+├── data/                         # Dataset (excluded from git)
+│   └── Combined Dataset/
+│       ├── train/               # Training images (10,240 images)
+│       │   ├── Mild Impairment/
+│       │   ├── Moderate Impairment/
+│       │   ├── No Impairment/
+│       │   └── Very Mild Impairment/
+│       └── test/                # Test images (1,279 images)
+│           ├── Mild Impairment/
+│           ├── Moderate Impairment/
+│           ├── No Impairment/
+│           └── Very Mild Impairment/
+├── notebooks/                              # Jupyter notebooks for development
+│   ├── 01_eda.ipynb                       # Exploratory data analysis
+│   ├── 02_preprocessing.ipynb             # Data preprocessing steps
+│   ├── 03_baseline.ipynb                  # Baseline model experiments
+│   ├── label_check.ipynb                  # Dataset label verification
+│   ├── train_model.ipynb                  # Original training notebook
+│   └── Alzheimers_MRI_Classification_Final.ipynb  # Production notebook with evaluation
+├── outputs/                      # Generated outputs
+│   └── confusion_matrix.png     # Visualization of model performance
+├── requirements.txt              # Python dependencies
+├── .gitignore                   # Git ignore rules
+└── README.md                    # This file
+```
+
+## Installation
+
+1. Clone this repository:
 
 ```bash
-cd alzheimers-app
+git clone <repository-url>
+cd AI4Alzheimers
+```
+
+2. Create and activate a virtual environment:
+
+```bash
+python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# Mac/Linux
+source .venv/bin/activate
+```
+
+3. Install dependencies:
+
+```bash
 pip install -r requirements.txt
-uvicorn server:app --reload --port 8000
 ```
 
-**Terminal 2 - Frontend:**
+## Training the Model
+
+### Using the Production Notebook (Recommended)
 
 ```bash
-cd alzheimers-app
-npm install
-npm run dev
+jupyter notebook notebooks/Alzheimers_MRI_Classification_Final.ipynb
 ```
 
-## 📁 Project Structure
+**The notebook will:**
 
-```
-alzheimers/
-  ├── models/
-  │   └── best_model.pt          ← Your trained ResNet50 model
-  └── alzheimers-app/
-      ├── server.py               ← FastAPI backend
-      ├── requirements.txt        ← Python dependencies
-      ├── start-backend.bat       ← Windows: Start backend
-      ├── start-frontend.bat      ← Windows: Start frontend
-      ├── package.json
-      └── src/
-          └── App.jsx             ← React frontend
-```
+- ✅ Load the existing trained model by default (no retraining)
+- ✅ Evaluate on test set and display metrics
+- ✅ Generate confusion matrix visualization
+- ✅ Save results to `outputs/confusion_matrix.png`
 
-## 🔑 Key URLs
+**To retrain from scratch** (not recommended unless needed):
 
-- **Backend API:** http://localhost:8000
-- **API Docs:** http://localhost:8000/docs (auto-generated)
-- **Frontend App:** http://localhost:5173
+1. Open the notebook
+2. Set `TRAIN = True` in the model loading cell
+3. Run all cells (⚠️ will overwrite existing model)
 
-## 🧪 Quick Test
+### Model Training Details
 
-1. Visit http://localhost:5173
-2. Upload any MRI image
-3. Click "Run Diagnosis"
-4. See prediction + confidence scores
+- **Base Model**: ResNet-18 (pre-trained on ImageNet)
+- **Fine-tuning Strategy**: Last 2 blocks + final FC layer
+- **Optimizer**: Adam (lr=1e-5)
+- **Loss Function**: CrossEntropyLoss
+- **Batch Size**: 8 (training), 16 (evaluation)
+- **Epochs**: 5
+- **Data Augmentation**: Resize (224x224), Normalize (ImageNet stats)
 
-## 📊 API Response Format
+## Running the Web App
 
-```json
-{
-  "predicted_class": "Non-Demented",
-  "probability": [0.85, 0.08, 0.05, 0.02],
-  "confidence": 0.85,
-  "all_classes": [
-    "Non-Demented",
-    "Very Mild Demented",
-    "Mild Demented",
-    "Moderate Demented"
-  ]
-}
+1. Navigate to the app directory:
+
+```bash
+cd app
 ```
 
-## ⚠️ Common Issues
+2. Start the Streamlit server:
 
-| Problem             | Solution                                      |
-| ------------------- | --------------------------------------------- |
-| Port already in use | Change port: `uvicorn server:app --port 8001` |
-| Model not found     | Verify path: `../models/best_model.pt`        |
-| CORS error          | Backend must be running first                 |
-| npm install fails   | Try: `npm install --legacy-peer-deps`         |
+```bash
+streamlit run app.py
+```
 
-## 🎯 What's Implemented
+3. The app will open in your browser at `http://localhost:8501`
 
-✅ FastAPI backend with ResNet50  
-✅ Image preprocessing (224×224, ImageNet normalization)  
-✅ CORS enabled for React frontend  
-✅ React file upload with drag-and-drop  
-✅ Real-time prediction display  
-✅ Probability distribution for all 4 classes  
-✅ Loading states and error handling  
-✅ Production-ready code structure
+4. **How to use:**
+   - Click "Browse files" to upload a brain MRI image (jpg, png, jpeg)
+   - The model will classify the image and display:
+     - Predicted Alzheimer's stage
+     - Confidence score (%)
+   - Images with confidence < 60% are flagged as potentially invalid
 
-## 🚧 Optional Enhancements
+### Example Usage
 
-- Add Grad-CAM visualization endpoint
-- Implement batch prediction
-- Add user authentication
-- Deploy to cloud (AWS/Azure)
-- Add model performance metrics dashboard
+```python
+# The app automatically:
+# 1. Loads the trained model (cached for performance)
+# 2. Preprocesses uploaded images (resize, normalize)
+# 3. Runs inference on CPU
+# 4. Displays results with confidence threshold
+```
 
-## 📖 Full Documentation
+## Model Details
 
-See `SETUP.md` for complete installation and troubleshooting guide.
+### Architecture
+
+- **Base**: ResNet-18 (18 deep convolutional layers)
+- **Pre-training**: ImageNet (1.2M images, 1000 classes)
+- **Modification**: Final FC layer replaced (512 → 4 classes)
+- **Fine-tuning**: Layers 3, 4, and FC (remaining layers frozen)
+
+### Input/Output Specifications
+
+- **Input Shape**: (224, 224, 3) - RGB images
+- **Preprocessing**:
+  - Resize to 224×224
+  - Normalize: mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+- **Output**: 4-class probability distribution
+- **Inference Time**: ~50-100ms per image (CPU)
+
+### Training Dataset
+
+- **Total Images**: 11,519 brain MRI scans
+- **Split**: 88.9% train (10,240), 11.1% test (1,279)
+- **Class Distribution** (train/test):
+  - No Impairment: 2,560 / 640
+  - Very Mild: 1,792 / 448
+  - Mild: 716 / 179
+  - Moderate: 48 / 12
+
+## Tech Stack
+
+### Core Frameworks
+
+- **PyTorch** (2.9.1) - Deep learning framework
+- **TorchVision** (0.24.1) - Computer vision utilities
+- **Streamlit** (1.52.2) - Web application framework
+
+### Data Science
+
+- **scikit-learn** (1.3+) - Metrics (accuracy, F1, confusion matrix)
+- **Matplotlib** (3.7+) - Plotting confusion matrix
+- **Seaborn** (0.12+) - Statistical data visualization
+- **Pillow** (12.0) - Image processing
+
+### Development
+
+- **Jupyter** (1.1.1) - Interactive notebooks
+- **Python** (3.12.6) - Programming language
+
+## Results & Evaluation
+
+The model's performance is documented in `notebooks/train_model_FINAL.ipynb`:
+
+```
+📊 MODEL EVALUATION RESULTS
+============================================================
+✅ Accuracy: 92.89%
+✅ F1-Score (weighted): 92.83%
+
+🎯 PER-CLASS PERFORMANCE:
+- Mild Impairment:      91.06% (163/179 correct)
+- Moderate Impairment: 100.00% (12/12 correct)
+- No Impairment:        97.50% (624/640 correct)
+- Very Mild Impairment: 86.83% (389/448 correct)
+```
+
+**Confusion Matrix**: Available in `outputs/confusion_matrix.png`
+
+## Repository
+
+- **GitHub**: https://github.com/bhuvannn469/AI4Alzheimers
+- **Model File**: Included in repo via Git LFS (alz_resnet18.pt, 42.72 MB)
+
+## Contributing
+
+This project was developed for educational purposes to demonstrate:
+
+- Transfer learning with ResNet-18
+- Medical image classification
+- Production-ready ML pipeline
+- Interactive ML deployment with Streamlit
+
+## Acknowledgments
+
+- **Dataset**: Brain MRI Images for Alzheimer's Disease Classification
+- **Base Model**: ResNet-18 from PyTorch Model Zoo
+- **Framework**: PyTorch, Streamlit
+
+## License
+
+This project is for educational purposes.
 
 ---
 
-## 🛠️ Technical Stack
-
-- **Backend:** FastAPI, PyTorch, Torchvision
-- **Frontend:** React 18, Vite, TailwindCSS
-- **Model:** ResNet50 (transfer learning)
-- **Image Processing:** PIL, ImageNet normalization
-
-## 📝 Original Vite Template Info
-
-This project is built on React + Vite template with HMR and ESLint.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
----
-
-**Made with ❤️ for Alzheimer's disease classification research**
+**Note**: This model is for educational/research purposes only and should not be used for medical diagnosis. Always consult healthcare professionals for medical advice.
